@@ -57,7 +57,16 @@ class nxcSocialNetworksOAuth2Facebook extends nxcSocialNetworksOAuth2
 		$data = curl_exec($ch);
 		curl_close($ch);
 
-		if( strpos( $data, 'access_token=' ) !== false ) {
+                // Since Graph API 2.3 the access token is returned as a JSON string
+                $json = json_decode($data);
+                if (json_last_error() === JSON_ERROR_NONE) {
+			if( isset( $json->access_token ) ) {
+				return array(
+					'token'  => $json->access_token,
+					'secret' => ''
+				);
+			}
+                } elseif( strpos( $data, 'access_token=' ) !== false ) {
 			preg_match( '/access_token=([^&]*)/i', $data, $matches );
 			if( isset( $matches[1] ) ) {
 				return array(
